@@ -49,8 +49,8 @@ RUN pnpm build
 # Your package.json must contain a "download-files" script, such as `"download-files": "pnpm run build && node dist/agent.js download-files"`
 RUN pnpm --filter agent download-files
 
-# Remove dev dependencies for a leaner production image (CI=true: pnpm refuses without TTY otherwise)
-RUN CI=true pnpm prune --prod
+# Do not run `pnpm prune --prod` here: at the workspace root it strips workspace packages'
+# node_modules (e.g. apps/agent loses @livekit/agents-plugin-*), breaking `node dist/main.js`.
 
 # --- Production stage ---
 FROM base
