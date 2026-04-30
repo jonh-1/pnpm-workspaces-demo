@@ -25,6 +25,11 @@ FROM base AS build
 # And set it as the working directory
 WORKDIR /app
 
+# Turn detector / HF assets use ~/.cache/huggingface (see @livekit/agents-plugin-livekit hf_utils).
+# Build runs as root; default HOME=/root puts caches outside COPY /app, so models never ship in the image.
+ENV HOME=/app
+ENV XDG_CACHE_HOME=/app/.cache
+
 # Copy workspace manifests so the initial `pnpm install` sees the full workspace graph
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/agent/package.json ./apps/agent/
@@ -67,6 +72,10 @@ RUN adduser \
     appuser
 
 WORKDIR /app
+
+# Match runtime user home so Node resolves the same Hugging Face hub cache as during build.
+ENV HOME=/app
+ENV XDG_CACHE_HOME=/app/.cache
 
 # Copy the built application with correct ownership in a single layer
 # This avoids expensive recursive chown operations on node_modules
